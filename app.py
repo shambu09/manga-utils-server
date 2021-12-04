@@ -6,8 +6,14 @@ from flask import Flask, make_response, request
 get_public_url_file = lambda file_id: f"https://drive.google.com/uc?export=view&id={file_id}"
 
 
+def init_logger(app):
+    gunicorn_error_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers.extend(gunicorn_error_logger.handlers)
+    app.logger.setLevel(logging.DEBUG)
+
 def create_app():
     app = Flask(__name__)
+    init_logger(app)
 
     @app.route('/')
     def index():
@@ -39,7 +45,8 @@ def create_app():
         try:
             resp = requests.get(get_public_url_file(file_id)).json()
 
-        except:
+        except Exception as e:
+            app.logger.error(f"Error: {e}")
             resp = make_response("Error: File not found", 404)
 
         else:
