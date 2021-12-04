@@ -13,12 +13,28 @@ def create_app():
     def index():
         return """<h1>Manga Crawler Server</h1><a href="https://github.com/shambu09/manga-crawler">Repo</a>"""
 
+    def _build_cors_preflight_response():
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
+
+    def _corsify_actual_response(response):
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
+
     @app.route('/get_metadata', methods=['GET'])
     def get_file():
+        if request.method == 'OPTIONS':
+            return _build_cors_preflight_response()
+
         file_id = request.args.get('file_id', "")
         resp = {}
 
-        if file_id == '': return resp
+        if file_id == '':
+            resp = make_response("Error: File not found", 404)
+            return _corsify_actual_response(resp)
 
         try:
             resp = requests.get(get_public_url_file(file_id)).json()
@@ -32,15 +48,7 @@ def create_app():
                 200,
             )
 
-            headers = {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': '*',
-                'Access-Control-Allow-Headers': '*',
-            }
-
-            resp.headers = headers
-
+        resp = _corsify_actual_response(resp)
         return resp
 
     @app.errorhandler(404)
