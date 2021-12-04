@@ -24,7 +24,7 @@ def create_app():
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    @app.route('/get_metadata', methods=['GET'])
+    @app.route('/get_metadata', methods=['GET', "OPTIONS"])
     def get_file():
         if request.method == 'OPTIONS':
             return _build_cors_preflight_response()
