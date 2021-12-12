@@ -49,7 +49,10 @@ def create_app():
     @app.route("/get_index", methods=["GET", "OPTIONS"])
     @cross_orgin
     def get_index():
-        index = db["content"].find_one({"_meta": 0})
+        index = db["content"].find_one({"_meta": 0}, {
+            "_meta": 0,
+            "_id": 0,
+        })
         return make_response(jsonify(index), 200)
 
     @app.route("/change_index", methods=["PUT", "PATCH", "OPTIONS"])
@@ -86,7 +89,10 @@ def create_app():
             resp = make_response(jsonify({"message": "No file found"}), 400)
 
         try:
-            resp = db["content"].find_one({"_id": file_id})
+            resp = db["content"].find_one({"_id": file_id}, {
+                "_meta": 0,
+                "_id": 0,
+            })
             resp = jsonify(resp)
 
         except Exception as e:
